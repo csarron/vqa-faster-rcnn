@@ -17,7 +17,7 @@ class ROIBoxHead(torch.nn.Module):
         super(ROIBoxHead, self).__init__()
         self.feature_extractor = make_roi_box_feature_extractor(cfg)
         self.predictor = make_roi_box_predictor(cfg)
-        self.post_processor = make_roi_box_post_processor(cfg)
+        # self.post_processor = make_roi_box_post_processor(cfg)
         self.loss_evaluator = make_roi_box_loss_evaluator(cfg)
         self.return_feats = cfg.MODEL.ROI_BOX_HEAD.RETURN_FC_FEATS
         self.has_attributes = cfg.MODEL.ROI_BOX_HEAD.ATTR
@@ -52,11 +52,12 @@ class ROIBoxHead(torch.nn.Module):
                 attr_logits = out_dict["attr_score"]
             else:
                 out_dict = self.predictor(x)
-
             class_logits = out_dict["scores"]
             box_regression = out_dict["bbox_deltas"]
         else:
             class_logits, box_regression = self.predictor(x)
+        return out_dict, {}, {}
+
         if not self.training:
             result = self.post_processor((class_logits, box_regression), proposals)
             if self.return_feats:
